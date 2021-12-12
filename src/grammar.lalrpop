@@ -1,0 +1,40 @@
+use std::str::FromStr;
+
+use crate::terms;
+
+grammar;
+
+pub Expr = Sum;
+
+Sum: terms::Term = {
+    <l:Sum> "+" <r:Factor> => terms::functor2("+", l, r),
+    <l:Sum> "-" <r:Factor> => terms::functor2("-", l, r),
+    Factor
+}
+
+Factor: terms::Term = {
+    <l:Factor> "*" <r:Term> => terms::functor2("*", l, r),
+    <l:Factor> "/" <r:Term> => terms::functor2("/", l, r),
+    Term
+}
+
+Term = {
+    Atom,
+    Variable,
+    AtomicFunctor,
+    Functor,
+    "(" <Expr> ")"
+}
+
+AtomicFunctor: terms::Term = Identifier => terms::Term::Functor{ name: <>, args: vec![] };
+
+Functor: terms::Term =
+    <i:FunctorName> <args:(<Expr> ","?)+> ")" => terms::Term::Functor { name: i, args: args };
+
+Atom: terms::Term = Num => terms::Term::Integer(<>);
+
+FunctorName: terms::Atom = r"[a-z][_A-Za-z0-9]*\(" => terms::Atom(<>.to_string());
+
+Identifier: terms::Atom = r"[a-z][_A-Za-z0-9]*" => terms::Atom(<>.to_string());
+Variable: terms::Term = r"[_A-Z][_A-Za-z0-9]*" => terms::Term::Var(terms::Variable(<>.to_string()));
+Num: i32 = r"[0-9]+" => i32::from_str(<>).unwrap();

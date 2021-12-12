@@ -1,18 +1,9 @@
-#[derive(Debug, PartialEq, Eq)]
-struct Atom(String);
+#[macro_use]
+extern crate lalrpop_util;
 
-#[derive(Debug, PartialEq, Eq)]
-enum Term {
-    Integer(i32),
-    Functor { name: Atom, args: Vec<Term> },
-}
+mod terms;
 
-fn atom(name: &str) -> Term {
-    Term::Functor {
-        name: Atom(name.to_string()),
-        args: vec![],
-    }
-}
+use terms::{atom, Atom, Term};
 
 fn main() {
     let term_true = atom("true");
@@ -28,4 +19,29 @@ fn main() {
     println!("{:?}", term);
 
     println!("Hello, world!");
+}
+
+lalrpop_mod!(pub grammar); // synthesized by LALRPOP
+
+#[test]
+fn grammar() {
+    assert!(grammar::ExprParser::new().parse("22").is_ok());
+    assert!(grammar::ExprParser::new().parse("true").is_ok());
+    assert!(grammar::ExprParser::new().parse("false").is_ok());
+
+    assert!(grammar::ExprParser::new().parse("plus(1,2,3)").is_ok());
+    assert!(grammar::ExprParser::new().parse("plus(1,2,3,)").is_ok());
+    assert!(grammar::ExprParser::new().parse("plus(1,2").is_err());
+
+    assert!(grammar::ExprParser::new().parse("X(1,2)").is_err());
+
+    assert!(grammar::ExprParser::new().parse("X").is_ok());
+    assert!(grammar::ExprParser::new().parse("f(X)").is_ok());
+
+    assert!(grammar::ExprParser::new().parse("2+X").is_ok());
+    assert!(grammar::ExprParser::new().parse("2+X*2").is_ok());
+
+    assert!(grammar::ExprParser::new().parse("(2+X)*2").is_ok());
+
+    assert!(grammar::ExprParser::new().parse("g(f(2+X))").is_ok());
 }

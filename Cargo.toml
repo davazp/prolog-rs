@@ -2,7 +2,11 @@
 name = "prolog-rs"
 version = "0.1.0"
 edition = "2021"
+resolver = "1"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[build-dependencies] # <-- We added this and everything after!
+lalrpop = "0.19.6"
 
 [dependencies]
+lalrpop-util = "0.19.6"
+regex = "1"
