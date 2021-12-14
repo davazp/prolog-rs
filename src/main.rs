@@ -4,9 +4,24 @@ extern crate lalrpop_util;
 mod printer;
 mod terms;
 
+use clap::Parser;
+use std::fs;
 use terms::{name, Name, Term};
 
+#[derive(Parser, Debug)]
+#[clap(about, version, author)]
+struct Args {
+    #[clap(default_value_t = String::from("load.pl"))]
+    file: String,
+}
+
 fn main() {
+    let args = Args::parse();
+
+    let content = fs::read_to_string(args.file).expect("Could not read file");
+
+    println!("{}", content);
+
     let _term_true = name("true");
     let _term_false = name("false");
 

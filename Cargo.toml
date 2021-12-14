@@ -8,6 +8,7 @@ resolver = "1"
 lalrpop = "0.19.6"
 
 [dependencies]
+clap = { version = "3.0.0-rc.4", features = ["derive"] }
 itertools = "0.10.3"
 lalrpop-util = "0.19.6"
 regex = "1"
