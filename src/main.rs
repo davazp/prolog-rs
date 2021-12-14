@@ -1,16 +1,17 @@
 #[macro_use]
 extern crate lalrpop_util;
 
+mod printer;
 mod terms;
 
-use terms::{atom, Atom, Term};
+use terms::{name, Name, Term};
 
 fn main() {
-    let term_true = atom("true");
-    let term_false = atom("false");
+    let term_true = name("true");
+    let term_false = name("false");
 
     let term = Term::Functor {
-        name: Atom("plus".to_string()),
+        name: Name("plus".to_string()),
         args: vec![Term::Integer(1), Term::Integer(2), Term::Integer(3)],
     };
 
@@ -19,6 +20,10 @@ fn main() {
     println!("{:?}", term);
 
     println!("Hello, world!");
+
+    let t = grammar::ExprParser::new().parse("f((a,b))").unwrap();
+
+    println!("{}", printer::print(&t));
 }
 
 lalrpop_mod!(pub grammar); // synthesized by LALRPOP
@@ -44,4 +49,8 @@ fn grammar() {
     assert!(grammar::ExprParser::new().parse("(2+X)*2").is_ok());
 
     assert!(grammar::ExprParser::new().parse("g(f(2+X))").is_ok());
+
+    assert!(grammar::ExprParser::new().parse("test :- a").is_ok());
+
+    assert!(grammar::ExprParser::new().parse("f((a,b))").is_ok());
 }

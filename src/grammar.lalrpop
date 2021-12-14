@@ -4,37 +4,53 @@ use crate::terms;
 
 grammar;
 
-pub Expr = Sum;
+pub Program = Clause*;
+pub Clause = <Expr> ".";
+pub Query = <Expr> ".";
+pub Expr = Rule1200;
 
-Sum: terms::Term = {
-    <l:Sum> "+" <r:Factor> => terms::functor2("+", l, r),
-    <l:Sum> "-" <r:Factor> => terms::functor2("-", l, r),
-    Factor
-}
+XFY<Op,NextTier>: terms::Term = {
+    <l:XFY<Op,NextTier>> <op:Op> <r:NextTier> => terms::functor2(op, l, r),
+    NextTier
+};
 
-Factor: terms::Term = {
-    <l:Factor> "*" <r:Term> => terms::functor2("*", l, r),
-    <l:Factor> "/" <r:Term> => terms::functor2("/", l, r),
-    Term
-}
+Rule1200 = XFY<Op1200, Rule1000>;
+Rule1200_arg = XFY<Op1200, Rule1000_arg>;
+Op1200 = { ":-" };
+
+Rule1000 = XFY<Op1000, Rule700>;
+Rule1000_arg = Rule700;
+Op1000 = { "," }
+
+Rule700 = XFY<Op700, Rule500>;
+Op700 = { "<", ">", "=", "<=", ">=" };
+
+Rule500 = XFY<Op500, Rule400>;
+Op500 = { "+", "-" };
+
+Rule400 = XFY<Op400, Term>;
+Op400 = { "*", "/" }
 
 Term = {
-    Atom,
+    Name,
     Variable,
     AtomicFunctor,
     Functor,
     "(" <Expr> ")"
 }
 
-AtomicFunctor: terms::Term = Identifier => terms::Term::Functor{ name: <>, args: vec![] };
+AtomicFunctor: terms::Term =
+    Identifier => terms::Term::Functor{ name: <>, args: vec![] };
 
 Functor: terms::Term =
-    <i:FunctorName> <args:(<Expr> ","?)+> ")" => terms::Term::Functor { name: i, args: args };
+    <i:FunctorName> <args:(<FunctorArg> ","?)+> ")" => terms::Term::Functor { name: i, args: args };
 
-Atom: terms::Term = Num => terms::Term::Integer(<>);
+FunctorArg: terms::Term = Rule700;
 
-FunctorName: terms::Atom = r"[a-z][_A-Za-z0-9]*\(" => terms::Atom(<>.to_string());
+Name: terms::Term = Num => terms::Term::Integer(<>);
 
-Identifier: terms::Atom = r"[a-z][_A-Za-z0-9]*" => terms::Atom(<>.to_string());
+FunctorName: terms::Name = r"[a-z][_A-Za-z0-9]*\(" => terms::Name(<>.to_string());
+Identifier: terms::Name = r"[a-z][_A-Za-z0-9]*" => terms::Name(<>.to_string());
 Variable: terms::Term = r"[_A-Z][_A-Za-z0-9]*" => terms::Term::Var(terms::Variable(<>.to_string()));
+
 Num: i32 = r"[0-9]+" => i32::from_str(<>).unwrap();
