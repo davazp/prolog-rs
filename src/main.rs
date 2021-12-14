@@ -7,23 +7,15 @@ mod terms;
 use terms::{name, Name, Term};
 
 fn main() {
-    let term_true = name("true");
-    let term_false = name("false");
+    let _term_true = name("true");
+    let _term_false = name("false");
 
     let term = Term::Functor {
-        name: Name("plus".to_string()),
+        name: Name::from("plus"),
         args: vec![Term::Integer(1), Term::Integer(2), Term::Integer(3)],
     };
 
-    println!("{:?}", term_true);
-    println!("{:?}", term_false);
-    println!("{:?}", term);
-
-    println!("Hello, world!");
-
-    let t = grammar::ExprParser::new().parse("f((a,b))").unwrap();
-
-    println!("{}", printer::print(&t));
+    println!("{}", printer::print(&term));
 }
 
 lalrpop_mod!(pub grammar); // synthesized by LALRPOP

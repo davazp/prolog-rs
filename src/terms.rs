@@ -1,8 +1,20 @@
 #[derive(Debug, PartialEq, Eq)]
 pub struct Name(pub String);
 
+impl Name {
+    pub fn from(name: &str) -> Self {
+        Name(name.to_string())
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct Variable(pub String);
+
+impl Variable {
+    pub fn from(name: &str) -> Self {
+        Variable(name.to_string())
+    }
+}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Term {
