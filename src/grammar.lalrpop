@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::terms;
+use crate::terms::{Name, Term, Variable} ;
 
 grammar;
 
@@ -10,8 +10,8 @@ Query = <Expr> ".";
 
 pub Expr = Rule1200;
 
-XFY<Op,NextTier>: terms::Term = {
-    <l:XFY<Op,NextTier>> <op:Op> <r:NextTier> => terms::functor2(op, l, r),
+XFY<Op,NextTier>: Term = {
+    <l:XFY<Op,NextTier>> <op:Op> <r:NextTier> => Term::functor2(op, l, r),
     NextTier
 };
 
@@ -29,10 +29,10 @@ Op700 = { "<", ">", "=", "<=", ">=" };
 Rule500 = XFY<Op500, Rule400>;
 Op500 = { "+", "-" };
 
-Rule400 = XFY<Op400, Term>;
+Rule400 = XFY<Op400, ExprTerm>;
 Op400 = { "*", "/" }
 
-Term = {
+ExprTerm = {
     Name,
     Variable,
     AtomicFunctor,
@@ -40,18 +40,18 @@ Term = {
     "(" <Expr> ")"
 }
 
-AtomicFunctor: terms::Term =
-    Identifier => terms::Term::Functor{ name: <>, args: vec![] };
+AtomicFunctor: Term =
+    Identifier => Term::Functor{ name: <>, args: vec![] };
 
-Functor: terms::Term =
-    <i:FunctorName> <args:(<FunctorArg> ","?)+> ")" => terms::Term::Functor { name: i, args: args };
+Functor: Term =
+    <i:FunctorName> <args:(<FunctorArg> ","?)+> ")" => Term::Functor { name: i, args: args };
 
-FunctorArg: terms::Term = Rule700;
+FunctorArg: Term = Rule700;
 
-Name: terms::Term = Num => terms::Term::Integer(<>);
+Name: Term = Num => Term::Integer(<>);
 
-FunctorName: terms::Name = r"[a-z][_A-Za-z0-9]*\(" => terms::Name(<>.to_string());
-Identifier: terms::Name = r"[a-z][_A-Za-z0-9]*" => terms::Name(<>.to_string());
-Variable: terms::Term = r"[_A-Z][_A-Za-z0-9]*" => terms::Term::Var(terms::Variable(<>.to_string()));
+FunctorName: Name = r"[a-z][_A-Za-z0-9]*\(" => Name(<>.to_string());
+Identifier: Name = r"[a-z][_A-Za-z0-9]*" => Name(<>.to_string());
+Variable: Term = r"[_A-Z][_A-Za-z0-9]*" => Term::Var(Variable(<>.to_string()));
 
 Num: i32 = r"[0-9]+" => i32::from_str(<>).unwrap();

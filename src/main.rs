@@ -7,6 +7,7 @@ use std::fs;
 mod parser;
 mod printer;
 mod terms;
+mod unify;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
