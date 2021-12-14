@@ -5,8 +5,9 @@ use crate::terms;
 grammar;
 
 pub Program = Clause*;
-pub Clause = <Expr> ".";
-pub Query = <Expr> ".";
+Clause = <Expr> ".";
+Query = <Expr> ".";
+
 pub Expr = Rule1200;
 
 XFY<Op,NextTier>: terms::Term = {

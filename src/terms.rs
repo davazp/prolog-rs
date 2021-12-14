@@ -2,6 +2,7 @@
 pub struct Name(pub String);
 
 impl Name {
+    #[allow(dead_code)]
     pub fn from(name: &str) -> Self {
         Name(name.to_string())
     }
@@ -11,6 +12,7 @@ impl Name {
 pub struct Variable(pub String);
 
 impl Variable {
+    #[allow(dead_code)]
     pub fn from(name: &str) -> Self {
         Variable(name.to_string())
     }
@@ -23,6 +25,7 @@ pub enum Term {
     Var(Variable),
 }
 
+#[allow(dead_code)]
 pub fn name(name: &str) -> Term {
     Term::Functor {
         name: Name(name.to_string()),
