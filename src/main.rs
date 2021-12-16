@@ -2,12 +2,14 @@
 extern crate lalrpop_util;
 
 use clap::Parser;
-use std::fs;
 
+mod database;
 mod parser;
 mod printer;
 mod terms;
 mod unify;
+
+use database::Database;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
@@ -19,12 +21,9 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let content = fs::read_to_string(args.file).expect("Could not read file");
+    let db = Database::from_file(&args.file).expect("could not read database");
 
-    let parser = parser::grammar::ProgramParser::new();
-    let ast = parser.parse(&content).expect("could not parse");
-
-    for clause in ast.iter() {
-        println!("{}", printer::print(&clause));
-    }
+    // for clause in ast.iter() {
+    //     println!("{}", printer::print(&clause));
+    // }
 }
