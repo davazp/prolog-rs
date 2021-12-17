@@ -137,6 +137,11 @@ mod tests {
     }
 
     #[test]
+    fn test_complex_unification() {
+        assert!(unify_exprs("f(g(X, Y, U), U)", "f(g(a, U, Z), Y)").is_some());
+    }
+
+    #[test]
     fn test_unifiers() {
         assert_eq!(unifier("plus(X,2)", "plus(1,Y)"), parse_expr("plus(1,2)"));
     }
