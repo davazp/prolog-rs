@@ -10,6 +10,7 @@ mod terms;
 mod unify;
 
 use database::Database;
+use unify::unify;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
@@ -23,7 +24,19 @@ fn main() {
 
     let db = Database::from_file(&args.file).expect("could not read database");
 
-    // for clause in ast.iter() {
-    //     println!("{}", printer::print(&clause));
-    // }
+    let mut line = String::new();
+    std::io::stdin().read_line(&mut line).unwrap();
+
+    let query = parser::parse_query(&line).expect("invalid query");
+
+    for clause in db.clauses.iter() {
+        match unify(&query, clause) {
+            Some(env) => {
+                println!("{:?}", env);
+            }
+            None => {
+                println!("false");
+            }
+        }
+    }
 }

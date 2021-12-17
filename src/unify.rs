@@ -1,6 +1,7 @@
 use crate::terms::{Term, Variable};
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct Env {
     map: HashMap<Variable, Term>,
 }

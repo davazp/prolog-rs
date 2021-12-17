@@ -7,6 +7,11 @@ pub fn parse_expr(str: &str) -> Result<Term, ()> {
     parser.parse(&str).map_err(|_| ())
 }
 
+pub fn parse_query(str: &str) -> Result<Term, ()> {
+    let parser = grammar::QueryParser::new();
+    parser.parse(&str).map_err(|_| ())
+}
+
 #[cfg(test)]
 mod tests {
     use super::parse_expr;
