@@ -73,7 +73,7 @@ impl Database {
     }
 
     pub fn query(&self, query: Functor) {
-        for Clause { head, body: _ } in self.clauses.iter() {
+        for Clause { head, body: _ } in self.matching_clauses(&query.name, query.args.len()) {
             if let Some(env) = unify_functors(&query, head) {
                 println!("-------");
                 for (key, value) in env.map.iter() {
