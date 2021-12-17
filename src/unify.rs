@@ -1,4 +1,4 @@
-use crate::terms::{Term, Variable};
+use crate::terms::{Functor, Term, Variable};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -6,10 +6,16 @@ pub struct Env {
     pub map: HashMap<Variable, Term>,
 }
 
+impl Env {
+    pub fn new() -> Self {
+        Env {
+            map: HashMap::new(),
+        }
+    }
+}
+
 pub fn unify(t1: &Term, t2: &Term) -> Option<Env> {
-    let mut env = Env {
-        map: HashMap::new(),
-    };
+    let mut env = Env::new();
     if unify_in_env(&mut env, t1, t2) {
         Some(env)
     } else {
@@ -17,19 +23,23 @@ pub fn unify(t1: &Term, t2: &Term) -> Option<Env> {
     }
 }
 
-fn unify_in_env(env: &mut Env, t1: &Term, t2: &Term) -> bool {
-    match (t1, t2) {
-        (Term::Integer(x), Term::Integer(y)) => x == y,
-        (Term::Var(x), Term::Var(y)) if x == y => true,
-        (Term::Var(x), value) => bind_var(env, x, value.clone()),
-        (value, Term::Var(x)) => bind_var(env, x, value.clone()),
+pub fn unify_functors(f1: &Functor, f2: &Functor) -> Option<Env> {
+    let mut env = Env::new();
+    if unify_functors_in_env(&mut env, f1, f2) {
+        Some(env)
+    } else {
+        None
+    }
+}
 
+fn unify_functors_in_env(env: &mut Env, f1: &Functor, f2: &Functor) -> bool {
+    match (f1, f2) {
         (
-            Term::Functor {
+            Functor {
                 name: name1,
                 args: args1,
             },
-            Term::Functor {
+            Functor {
                 name: name2,
                 args: args2,
             },
@@ -41,6 +51,18 @@ fn unify_in_env(env: &mut Env, t1: &Term, t2: &Term) -> bool {
             }
             true
         }
+        // impossible? but seems necessary to make the compiler happy
+        (_, _) => false,
+    }
+}
+
+fn unify_in_env(env: &mut Env, t1: &Term, t2: &Term) -> bool {
+    match (t1, t2) {
+        (Term::Integer(x), Term::Integer(y)) => x == y,
+        (Term::Var(x), Term::Var(y)) if x == y => true,
+        (Term::Var(x), value) => bind_var(env, x, value.clone()),
+        (value, Term::Var(x)) => bind_var(env, x, value.clone()),
+        (Term::Fun(f1), Term::Fun(f2)) => unify_functors_in_env(env, f1, f2),
         _ => false,
     }
 }
@@ -61,17 +83,17 @@ fn bind_var(env: &mut Env, var: &Variable, value: Term) -> bool {
 fn occur_check(var: &Variable, term: &Term) -> bool {
     match term {
         Term::Var(v) if v == var => true,
-        Term::Functor { args, .. } => args.iter().find(|a| occur_check(var, a)).is_some(),
+        Term::Fun(Functor { args, .. }) => args.iter().find(|a| occur_check(var, a)).is_some(),
         _ => false,
     }
 }
 
 fn substitute(env: &Env, term: &Term) -> Term {
     match term {
-        Term::Functor { name, args } => Term::Functor {
+        Term::Fun(Functor { name, args }) => Term::Fun(Functor {
             name: name.clone(),
             args: args.iter().map(|e| substitute(env, e)).collect(),
-        },
+        }),
         Term::Var(v) => {
             if let Some(value) = env.map.get(v) {
                 substitute(env, value)

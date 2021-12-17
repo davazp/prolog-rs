@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::terms::{Name, Term, Variable} ;
+use crate::terms::{Functor, Name, Term, Variable} ;
 
 grammar;
 
@@ -41,10 +41,10 @@ ExprTerm = {
 }
 
 AtomicFunctor: Term =
-    Identifier => Term::Functor{ name: <>, args: vec![] };
+    Identifier => Term::Fun( Functor{ name: <>, args: vec![]} );
 
 Functor: Term =
-    <i:FunctorName> <args:(<FunctorArg> ","?)+> ")" => Term::Functor { name: i, args: args };
+    <i:FunctorName> <args:(<FunctorArg> ","?)+> ")" => Term::Fun(Functor { name: i, args: args });
 
 FunctorArg: Term = Rule700;
 

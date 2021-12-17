@@ -18,7 +18,7 @@ fn main() {
         let mut line = String::new();
         std::io::stdin().read_line(&mut line).unwrap();
 
-        let query = match parse_query(line.trim_end()) {
+        let query = match parse_query(line.trim_end()).and_then(|t| t.as_functor().ok_or(())) {
             Ok(query) => query,
             Err(_) => continue,
         };

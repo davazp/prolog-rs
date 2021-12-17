@@ -1,7 +1,7 @@
 use crate::parser;
 use crate::printer::print;
-use crate::terms::{Name, Term};
-use crate::unify::unify;
+use crate::terms::{Functor, Name, Term};
+use crate::unify::unify_functors;
 use std::fs;
 
 pub struct Database {
@@ -15,30 +15,31 @@ pub enum Error {
 }
 
 pub struct Clause {
-    pub head: Term,
+    pub head: Functor,
     pub body: Term,
 }
 
 impl Clause {
     pub fn from(term: Term) -> Result<Clause, ()> {
-        match term {
-            Term::Functor {
+        match term.as_functor() {
+            Some(Functor {
                 name: Name(name),
                 mut args,
-            } if name == ":-" => match args.len() {
+            }) if name == ":-" => match args.len() {
                 0 => Err(()),
                 1 => Err(()),
                 2 => {
                     let body = args.pop().unwrap();
-                    let head = args.pop().unwrap();
+                    let head = args.pop().and_then(|h| h.as_functor()).unwrap();
                     Ok(Clause { head, body })
                 }
                 _ => Err(()),
             },
-            head => Ok(Clause {
+            Some(head) => Ok(Clause {
                 head,
                 body: Term::name("true"),
             }),
+            None => Err(()),
         }
     }
 }
@@ -58,9 +59,22 @@ impl Database {
         Ok(Database { clauses })
     }
 
-    pub fn query(&self, query: Term) {
-        for Clause { head, body } in self.clauses.iter() {
-            if let Some(env) = unify(&query, head) {
+    fn matching_clauses(&self, fname: &Name, farity: usize) -> Vec<&Clause> {
+        self.clauses
+            .iter()
+            .filter(|c| {
+                if let Functor { name, args } = &c.head {
+                    name == fname && farity == args.len()
+                } else {
+                    false
+                }
+            })
+            .collect()
+    }
+
+    pub fn query(&self, query: Functor) {
+        for Clause { head, body: _ } in self.clauses.iter() {
+            if let Some(env) = unify_functors(&query, head) {
                 println!("-------");
                 for (key, value) in env.map.iter() {
                     println!("{} = {}", key.0, print(value));
