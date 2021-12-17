@@ -1,5 +1,7 @@
 use crate::parser;
+use crate::printer::print;
 use crate::terms::{Name, Term};
+use crate::unify::unify;
 use std::fs;
 
 pub struct Database {
@@ -54,5 +56,18 @@ impl Database {
             .collect::<Result<Vec<Clause>, Error>>()?;
 
         Ok(Database { clauses })
+    }
+
+    pub fn query(&self, query: Term) {
+        for Clause { head, body } in self.clauses.iter() {
+            if let Some(env) = unify(&query, head) {
+                println!("-------");
+                for (key, value) in env.map.iter() {
+                    println!("{} = {}", key.0, print(value));
+                }
+            }
+        }
+        println!("-------");
+        println!("false");
     }
 }
