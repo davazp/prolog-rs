@@ -9,7 +9,7 @@ mod printer;
 mod terms;
 mod unify;
 
-use database::Database;
+use database::{Clause, Database};
 use unify::unify;
 
 #[derive(Parser, Debug)]
@@ -33,14 +33,16 @@ fn main() {
             Err(_) => continue,
         };
 
-        for clause in db.clauses.iter() {
-            if let Some(env) = unify(&query, clause) {
+        for Clause { head, body } in db.clauses.iter() {
+            if let Some(env) = unify(&query, head) {
+                println!("-------");
                 for (key, value) in env.map.iter() {
                     println!("{} = {}", key.0, printer::print(value));
                 }
             }
         }
 
+        println!("-------");
         println!("false");
     }
 }
