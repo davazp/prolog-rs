@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct Env {
-    map: HashMap<Variable, Term>,
+    pub map: HashMap<Variable, Term>,
 }
 
 pub fn unify(t1: &Term, t2: &Term) -> Option<Env> {

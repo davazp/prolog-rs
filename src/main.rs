@@ -24,19 +24,23 @@ fn main() {
 
     let db = Database::from_file(&args.file).expect("could not read database");
 
-    let mut line = String::new();
-    std::io::stdin().read_line(&mut line).unwrap();
+    loop {
+        let mut line = String::new();
+        std::io::stdin().read_line(&mut line).unwrap();
 
-    let query = parser::parse_query(&line).expect("invalid query");
+        let query = match parser::parse_query(line.trim_end()) {
+            Ok(query) => query,
+            Err(_) => continue,
+        };
 
-    for clause in db.clauses.iter() {
-        match unify(&query, clause) {
-            Some(env) => {
-                println!("{:?}", env);
-            }
-            None => {
-                println!("false");
+        for clause in db.clauses.iter() {
+            if let Some(env) = unify(&query, clause) {
+                for (key, value) in env.map.iter() {
+                    println!("{} = {}", key.0, printer::print(value));
+                }
             }
         }
+
+        println!("false");
     }
 }

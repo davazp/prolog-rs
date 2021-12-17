@@ -6,7 +6,7 @@ grammar;
 
 pub Program = Clause*;
 Clause = <Expr> ".";
-Query = <Expr> ".";
+pub Query = <Expr> ".";
 
 pub Expr = Rule1200;
 
