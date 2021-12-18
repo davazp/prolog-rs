@@ -20,6 +20,17 @@ impl Variable {
     }
 }
 
+pub struct Query(Vec<Functor>);
+
+impl Query {
+    pub fn append(&mut self, other: &mut Query) {
+        self.0.append(&mut other.0);
+    }
+    pub fn select(&mut self) -> Option<Functor> {
+        self.0.pop()
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Functor {
     pub name: Name,
@@ -71,6 +82,18 @@ impl Term {
         match self {
             Term::Fun(f) => Some(f),
             _ => None,
+        }
+    }
+
+    pub fn as_query(self) -> Option<Query> {
+        match self.as_functor()? {
+            Functor { name, mut args } if name == Name(",".to_string()) && args.len() == 2 => {
+                let mut other = args.pop()?.as_query()?;
+                let mut query = args.pop()?.as_query()?;
+                query.append(&mut other);
+                Some(query)
+            }
+            fun => Some(Query(vec![fun])),
         }
     }
 }

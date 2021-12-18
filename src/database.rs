@@ -1,6 +1,6 @@
 use crate::parser;
 use crate::printer::print;
-use crate::terms::{Functor, Name, Term};
+use crate::terms::{Functor, Name, Query, Term};
 use crate::unify::unify_functors;
 use std::fs;
 
@@ -72,9 +72,16 @@ impl Database {
             .collect()
     }
 
-    pub fn query(&self, query: Functor) {
-        for Clause { head, body: _ } in self.matching_clauses(&query.name, query.args.len()) {
-            if let Some(env) = unify_functors(&query, head) {
+    pub fn query(&self, mut query: Query) {
+        let mut first = match query.select() {
+            Some(c) => c,
+            _ => {
+                return;
+            }
+        };
+
+        for Clause { head, body: _ } in self.matching_clauses(&first.name, first.args.len()) {
+            if let Some(env) = unify_functors(&first, head) {
                 println!("-------");
                 for (key, value) in env.map.iter() {
                     println!("{} = {}", key.0, print(value));

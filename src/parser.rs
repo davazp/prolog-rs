@@ -1,15 +1,18 @@
 lalrpop_mod!(pub grammar);
 
-use crate::terms::Term;
+use crate::terms::{Query, Term};
 
 pub fn parse_expr(str: &str) -> Result<Term, ()> {
     let parser = grammar::ExprParser::new();
     parser.parse(&str).map_err(|_| ())
 }
 
-pub fn parse_query(str: &str) -> Result<Term, ()> {
+pub fn parse_query(str: &str) -> Result<Query, ()> {
     let parser = grammar::QueryParser::new();
-    parser.parse(&str).map_err(|_| ())
+    parser
+        .parse(&str)
+        .map_err(|_| ())
+        .and_then(|t| t.as_query().ok_or(()))
 }
 
 #[cfg(test)]

@@ -18,9 +18,12 @@ fn main() {
         let mut line = String::new();
         std::io::stdin().read_line(&mut line).unwrap();
 
-        let query = match parse_query(line.trim_end()).and_then(|t| t.as_functor().ok_or(())) {
+        let query = match parse_query(line.trim_end()) {
             Ok(query) => query,
-            Err(_) => continue,
+            Err(_) => {
+                println!("invalid query");
+                continue;
+            }
         };
 
         db.query(query);
