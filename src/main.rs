@@ -12,7 +12,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let db = Database::from_file(&args.file).expect("could not read database");
+    let db = Session::create(&args.file).expect("could not start session");
 
     loop {
         let mut line = String::new();

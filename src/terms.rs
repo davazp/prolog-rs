@@ -112,6 +112,36 @@ fn term_variables_in_set<'a>(term: &'a Term, set: &mut HashSet<&'a Variable>) {
     }
 }
 
+pub struct Clause {
+    pub head: Functor,
+    pub body: Term,
+}
+
+impl Clause {
+    pub fn from(term: Term) -> Result<Clause, ()> {
+        match term.as_functor() {
+            Some(Functor {
+                name: Name(name),
+                mut args,
+            }) if name == ":-" => match args.len() {
+                0 => Err(()),
+                1 => Err(()),
+                2 => {
+                    let body = args.pop().unwrap();
+                    let head = args.pop().and_then(|h| h.as_functor()).unwrap();
+                    Ok(Clause { head, body })
+                }
+                _ => Err(()),
+            },
+            Some(head) => Ok(Clause {
+                head,
+                body: Term::name("true"),
+            }),
+            None => Err(()),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

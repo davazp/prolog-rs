@@ -1,7 +1,5 @@
 use crate::parser;
-use crate::printer::print;
-use crate::terms::{Functor, Name, Query, Term};
-use crate::unify::unify_functors;
+use crate::terms::{Clause, Functor, Name};
 use std::fs;
 
 pub struct Database {
@@ -12,36 +10,6 @@ pub struct Database {
 pub enum Error {
     NotExistingFile,
     ParsingError,
-}
-
-pub struct Clause {
-    pub head: Functor,
-    pub body: Term,
-}
-
-impl Clause {
-    pub fn from(term: Term) -> Result<Clause, ()> {
-        match term.as_functor() {
-            Some(Functor {
-                name: Name(name),
-                mut args,
-            }) if name == ":-" => match args.len() {
-                0 => Err(()),
-                1 => Err(()),
-                2 => {
-                    let body = args.pop().unwrap();
-                    let head = args.pop().and_then(|h| h.as_functor()).unwrap();
-                    Ok(Clause { head, body })
-                }
-                _ => Err(()),
-            },
-            Some(head) => Ok(Clause {
-                head,
-                body: Term::name("true"),
-            }),
-            None => Err(()),
-        }
-    }
 }
 
 impl Database {
@@ -59,36 +27,13 @@ impl Database {
         Ok(Database { clauses })
     }
 
-    fn matching_clauses(&self, fname: &Name, farity: usize) -> Vec<&Clause> {
+    pub fn matching_clauses(&self, fname: &Name, farity: usize) -> Vec<&Clause> {
         self.clauses
             .iter()
             .filter(|c| {
-                if let Functor { name, args } = &c.head {
-                    name == fname && farity == args.len()
-                } else {
-                    false
-                }
+                let Functor { name, args } = &c.head;
+                name == fname && farity == args.len()
             })
             .collect()
-    }
-
-    pub fn query(&self, mut query: Query) {
-        let mut first = match query.select() {
-            Some(c) => c,
-            _ => {
-                return;
-            }
-        };
-
-        for Clause { head, body: _ } in self.matching_clauses(&first.name, first.args.len()) {
-            if let Some(env) = unify_functors(&first, head) {
-                println!("-------");
-                for (key, value) in env.map.iter() {
-                    println!("{} = {}", key.0, print(value));
-                }
-            }
-        }
-        println!("-------");
-        println!("false");
     }
 }
