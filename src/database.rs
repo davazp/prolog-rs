@@ -11,7 +11,6 @@ pub enum Error {
     NotExistingFile,
     ParsingError,
 }
-
 impl Database {
     pub fn from_file(file: &str) -> Result<Database, Error> {
         let content = fs::read_to_string(file).map_err(|_| Error::NotExistingFile)?;
@@ -28,13 +27,15 @@ impl Database {
     }
 
     pub fn matching_clauses(&self, fname: &Name, farity: usize) -> Vec<Clause> {
-        self.clauses
+        let mut result: Vec<Clause> = self
+            .clauses
             .iter()
             .filter(|c| {
                 let Functor { name, args } = &c.head;
                 name == fname && farity == args.len()
             })
             .cloned()
-            .collect()
+            .collect();
+        result
     }
 }

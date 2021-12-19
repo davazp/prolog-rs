@@ -1,18 +1,5 @@
+use crate::env::Env;
 use crate::terms::{Functor, Term, Variable};
-use std::collections::HashMap;
-
-#[derive(Debug, Clone)]
-pub struct Env {
-    pub map: HashMap<Variable, Term>,
-}
-
-impl Env {
-    pub fn new() -> Self {
-        Env {
-            map: HashMap::new(),
-        }
-    }
-}
 
 pub fn unify(t1: &Term, t2: &Term) -> Option<Env> {
     let mut env = Env::new();
@@ -71,11 +58,11 @@ fn bind_var(env: &mut Env, var: &Variable, value: Term) -> bool {
     if occur_check(var, &value) {
         return false;
     }
-    let binding = env.map.get(var).map(|x| x.clone());
+    let binding = env.lookup(var).map(|x| x.clone());
     if let Some(bound_value) = binding {
         unify_in_env(env, &value, &bound_value)
     } else {
-        env.map.insert(var.clone(), value);
+        env.bind(var.clone(), value);
         true
     }
 }
@@ -88,14 +75,14 @@ fn occur_check(var: &Variable, term: &Term) -> bool {
     }
 }
 
-fn substitute(env: &Env, term: &Term) -> Term {
+pub fn substitute(env: &Env, term: &Term) -> Term {
     match term {
         Term::Fun(Functor { name, args }) => Term::Fun(Functor {
             name: name.clone(),
             args: args.iter().map(|e| substitute(env, e)).collect(),
         }),
         Term::Var(v) => {
-            if let Some(value) = env.map.get(v) {
+            if let Some(value) = env.lookup(v) {
                 substitute(env, value)
             } else {
                 Term::Var(v.clone())

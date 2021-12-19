@@ -52,6 +52,6 @@ Name: Term = Num => Term::Integer(<>);
 
 FunctorName: Name = r"[a-z][_A-Za-z0-9]*\(" => Name(<>.to_string());
 Identifier: Name = r"[a-z][_A-Za-z0-9]*" => Name(<>.to_string());
-Variable: Term = r"[_A-Z][_A-Za-z0-9]*" => Term::Var(Variable(<>.to_string()));
+Variable: Term = r"[_A-Z][_A-Za-z0-9]*" => Term::Var(Variable(<>.to_string(), 0));
 
 Num: i32 = r"[0-9]+" => i32::from_str(<>).unwrap();

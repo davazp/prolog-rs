@@ -31,6 +31,6 @@ fn name_as_string(name: &Name) -> &str {
 }
 
 fn variable_name(var: &Variable) -> &str {
-    let Variable(str) = var;
+    let Variable(str, _) = var;
     str
 }

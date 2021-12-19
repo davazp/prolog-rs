@@ -1,7 +1,7 @@
 use crate::database::Database;
-use crate::printer::print;
-use crate::terms::{Clause, Functor, Goals, Variable};
-use crate::unify::{unify_functors_in_env, Env};
+use crate::env::Env;
+use crate::terms::{Clause, Functor, Goals};
+use crate::unify::unify_functors_in_env;
 use std::collections::VecDeque;
 
 pub struct Session {
@@ -14,14 +14,22 @@ impl Session {
         Ok(Session { db })
     }
 
-    fn solve(&self, mut resolvent: Goals, env: Env, chr: i32) -> bool {
+    fn solve(&self, resolvent: &mut Goals, env: &mut Env, chr: u32) -> bool {
         match resolvent.0.pop_front() {
-            None => true,
+            None => {
+                println!("solution:");
+                env.print();
+                println!("-------------------------");
+                false
+            }
             Some(selection) => {
                 let mut clauses = VecDeque::from(
                     self.db
                         .matching_clauses(&selection.name, selection.args.len()),
                 );
+                for c in clauses.iter_mut() {
+                    c.rename(chr)
+                }
                 self.prove(selection, clauses, resolvent, env, chr)
             }
         }
@@ -31,33 +39,45 @@ impl Session {
         &self,
         goal: Functor,
         mut clauses: VecDeque<Clause>,
-        mut resolvent: Goals,
-        env: Env,
-        chr: i32,
+        resolvent: &mut Goals,
+        env: &mut Env,
+        chr: u32,
     ) -> bool {
         if clauses.is_empty() {
             false
         } else {
-            let first = clauses[0].body.select_as_ref().unwrap();
+            env.push_frame();
 
-            let mut newenv = env.clone();
-            if unify_functors_in_env(&mut newenv, &goal, first) {
+            if unify_functors_in_env(env, &goal, &clauses[0].head) {
                 let clause = clauses.pop_front().unwrap();
-                for literal in clause.body.0.into_iter().rev() {
-                    resolvent.0.push_front(literal);
+
+                let mut newresolvent: Goals = Goals(VecDeque::with_capacity(
+                    clause.body.0.len() + resolvent.0.len(),
+                ));
+
+                for lit in clause.body.0.iter() {
+                    newresolvent.0.push_back(lit.clone());
                 }
-                self.solve(resolvent, newenv, chr + 1)
+                for lit in resolvent.0.iter() {
+                    newresolvent.0.push_back(lit.clone())
+                }
+                if self.solve(&mut newresolvent, env, chr + 1) {
+                    true
+                } else {
+                    env.pop_frame();
+                    self.prove(goal, clauses, resolvent, env, chr)
+                }
             } else {
-                clauses.remove(0);
+                env.pop_frame();
+                clauses.pop_front();
                 self.prove(goal, clauses, resolvent, env, chr)
             }
         }
     }
 
-    pub fn query(&self, query: Goals) {
-        if self.solve(query, Env::new(), 0) {
-            println!("solutions")
-        } else {
+    pub fn query(&self, mut query: Goals) {
+        let mut env = Env::new();
+        if !self.solve(&mut query, &mut env, 1) {
             println!("false")
         }
     }

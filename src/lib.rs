@@ -7,6 +7,7 @@ mod printer;
 mod session;
 mod terms;
 mod unify;
+mod env;
 
 pub use database::{Database};
 pub use terms::Clause;

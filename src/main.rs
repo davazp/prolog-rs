@@ -1,4 +1,5 @@
 use clap::Parser;
+use std::io::{self, Write};
 
 use prolog_rs::*;
 
@@ -16,6 +17,9 @@ fn main() {
 
     loop {
         let mut line = String::new();
+        print!("?- ");
+        io::stdout().flush().unwrap();
+
         std::io::stdin().read_line(&mut line).unwrap();
 
         let query = match parse_query(line.trim_end()) {

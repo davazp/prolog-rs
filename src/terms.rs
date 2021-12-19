@@ -11,12 +11,12 @@ impl Name {
 }
 
 #[derive(Clone, Hash, Debug, PartialEq, Eq)]
-pub struct Variable(pub String);
+pub struct Variable(pub String, pub u32);
 
 impl Variable {
     #[allow(dead_code)]
     pub fn from(name: &str) -> Self {
-        Variable(name.to_string())
+        Variable(name.to_string(), 0)
     }
 }
 
@@ -36,12 +36,26 @@ impl Goals {
     pub fn select_as_ref(&self) -> Option<&Functor> {
         self.0.get(0)
     }
+
+    pub fn rename(&mut self, chr: u32) {
+        for functor in self.0.iter_mut() {
+            functor.rename(chr)
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Functor {
     pub name: Name,
     pub args: Vec<Term>,
+}
+
+impl Functor {
+    pub fn rename(&mut self, chr: u32) {
+        for arg in self.args.iter_mut() {
+            arg.rename(chr);
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -62,7 +76,7 @@ impl Term {
 
     #[allow(dead_code)]
     pub fn variable(name: &str) -> Term {
-        Term::Var(Variable(name.to_string()))
+        Term::Var(Variable(name.to_string(), 0))
     }
 
     pub fn functor2(name: &str, arg1: Term, arg2: Term) -> Term {
@@ -101,6 +115,20 @@ impl Term {
                 Some(query)
             }
             fun => Some(Goals(VecDeque::from([fun]))),
+        }
+    }
+
+    pub fn rename(&mut self, chr: u32) {
+        match self {
+            Term::Fun(Functor { name, args }) => {
+                for arg in args.iter_mut() {
+                    arg.rename(chr);
+                }
+            }
+            Term::Var(ref mut v) => {
+                v.1 = chr;
+            }
+            _ => {}
         }
     }
 }
@@ -147,6 +175,11 @@ impl Clause {
             }),
             None => Err(()),
         }
+    }
+
+    pub fn rename(&mut self, chr: u32) {
+        self.head.rename(chr);
+        self.body.rename(chr);
     }
 }
 
