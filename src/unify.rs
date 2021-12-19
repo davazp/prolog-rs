@@ -1,7 +1,7 @@
 use crate::terms::{Functor, Term, Variable};
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Env {
     pub map: HashMap<Variable, Term>,
 }
@@ -32,7 +32,7 @@ pub fn unify_functors(f1: &Functor, f2: &Functor) -> Option<Env> {
     }
 }
 
-fn unify_functors_in_env(env: &mut Env, f1: &Functor, f2: &Functor) -> bool {
+pub fn unify_functors_in_env(env: &mut Env, f1: &Functor, f2: &Functor) -> bool {
     match (f1, f2) {
         (
             Functor {

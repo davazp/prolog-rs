@@ -27,13 +27,14 @@ impl Database {
         Ok(Database { clauses })
     }
 
-    pub fn matching_clauses(&self, fname: &Name, farity: usize) -> Vec<&Clause> {
+    pub fn matching_clauses(&self, fname: &Name, farity: usize) -> Vec<Clause> {
         self.clauses
             .iter()
             .filter(|c| {
                 let Functor { name, args } = &c.head;
                 name == fname && farity == args.len()
             })
+            .cloned()
             .collect()
     }
 }

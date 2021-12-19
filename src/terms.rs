@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Name(pub String);
@@ -20,14 +20,21 @@ impl Variable {
     }
 }
 
-pub struct Query(Vec<Functor>);
+#[derive(Clone)]
+pub struct Goals(pub VecDeque<Functor>);
 
-impl Query {
-    pub fn append(&mut self, other: &mut Query) {
+impl Goals {
+    pub fn empty() -> Goals {
+        Goals(VecDeque::new())
+    }
+    pub fn append(&mut self, other: &mut Goals) {
         self.0.append(&mut other.0);
     }
     pub fn select(&mut self) -> Option<Functor> {
-        self.0.pop()
+        self.0.pop_front()
+    }
+    pub fn select_as_ref(&self) -> Option<&Functor> {
+        self.0.get(0)
     }
 }
 
@@ -85,15 +92,15 @@ impl Term {
         }
     }
 
-    pub fn as_query(self) -> Option<Query> {
+    pub fn as_goals(self) -> Option<Goals> {
         match self.as_functor()? {
             Functor { name, mut args } if name == Name(",".to_string()) && args.len() == 2 => {
-                let mut other = args.pop()?.as_query()?;
-                let mut query = args.pop()?.as_query()?;
+                let mut other = args.pop()?.as_goals()?;
+                let mut query = args.pop()?.as_goals()?;
                 query.append(&mut other);
                 Some(query)
             }
-            fun => Some(Query(vec![fun])),
+            fun => Some(Goals(VecDeque::from([fun]))),
         }
     }
 }
@@ -112,9 +119,10 @@ fn term_variables_in_set<'a>(term: &'a Term, set: &mut HashSet<&'a Variable>) {
     }
 }
 
+#[derive(Clone)]
 pub struct Clause {
     pub head: Functor,
-    pub body: Term,
+    pub body: Goals,
 }
 
 impl Clause {
@@ -127,7 +135,7 @@ impl Clause {
                 0 => Err(()),
                 1 => Err(()),
                 2 => {
-                    let body = args.pop().unwrap();
+                    let body = args.pop().unwrap().as_goals().unwrap();
                     let head = args.pop().and_then(|h| h.as_functor()).unwrap();
                     Ok(Clause { head, body })
                 }
@@ -135,7 +143,7 @@ impl Clause {
             },
             Some(head) => Ok(Clause {
                 head,
-                body: Term::name("true"),
+                body: Goals::empty(),
             }),
             None => Err(()),
         }
