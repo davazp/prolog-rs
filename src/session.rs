@@ -3,6 +3,7 @@ use crate::env::Env;
 use crate::terms::{Clause, Functor, Goals};
 use crate::unify::unify_functors_in_env;
 use std::collections::VecDeque;
+use std::io;
 
 pub struct Session {
     db: Database,
@@ -20,7 +21,13 @@ impl Session {
                 println!("solution:");
                 env.print();
                 println!("-------------------------");
-                false
+
+                let mut line = String::new();
+                io::stdin().read_line(&mut line).expect("read line");
+                match line.trim() {
+                    ";" => false,
+                    _ => true,
+                }
             }
             Some(selection) => {
                 let mut clauses = VecDeque::from(

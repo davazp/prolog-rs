@@ -14,3 +14,6 @@ dinner(pizza).
 
 meal(X) :- food(X).
 always(X) :- lunch(X), dinner(X).
+
+nat(0).
+nat(s(X)) :- nat(X).
