@@ -55,9 +55,9 @@ impl Session {
         } else {
             env.push_frame();
 
-            if unify_functors_in_env(env, &goal, &clauses[0].head) {
-                let clause = clauses.pop_front().unwrap();
+            let clause = clauses.pop_front().unwrap();
 
+            if unify_functors_in_env(env, &goal, &clause.head) {
                 let mut newresolvent: Goals = Goals(VecDeque::with_capacity(
                     clause.body.0.len() + resolvent.0.len(),
                 ));
@@ -76,7 +76,6 @@ impl Session {
                 }
             } else {
                 env.pop_frame();
-                clauses.pop_front();
                 self.prove(goal, clauses, resolvent, env, chr)
             }
         }
