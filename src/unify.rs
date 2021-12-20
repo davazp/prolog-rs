@@ -3,6 +3,7 @@ use crate::terms::{Functor, Term, Variable};
 
 pub fn unify(t1: &Term, t2: &Term) -> Option<Env> {
     let mut env = Env::new();
+    env.push_frame();
     if unify_in_env(&mut env, t1, t2) {
         Some(env)
     } else {
@@ -12,6 +13,7 @@ pub fn unify(t1: &Term, t2: &Term) -> Option<Env> {
 
 pub fn unify_functors(f1: &Functor, f2: &Functor) -> Option<Env> {
     let mut env = Env::new();
+    env.push_frame();
     if unify_functors_in_env(&mut env, f1, f2) {
         Some(env)
     } else {
