@@ -132,7 +132,7 @@ impl Term {
 
     pub fn rename(&mut self, chr: u32) {
         match self {
-            Term::Fun(Functor { name, args }) => {
+            Term::Fun(Functor { args, .. }) => {
                 for arg in args.iter_mut() {
                     arg.rename(chr);
                 }

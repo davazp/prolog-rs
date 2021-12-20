@@ -43,7 +43,7 @@ impl Env {
                 if *i == 0 {
                     let binding = self.lookup(variable).unwrap();
                     let value = substitute(&self, binding);
-                    let value = println!("{} = {}", name, printer::print(&value));
+                    println!("{} = {}", name, printer::print(&value));
                 }
             }
         }

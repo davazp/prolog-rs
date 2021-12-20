@@ -27,7 +27,7 @@ impl Database {
     }
 
     pub fn matching_clauses(&self, fname: &Name, farity: usize) -> Vec<Clause> {
-        let mut result: Vec<Clause> = self
+        let result: Vec<Clause> = self
             .clauses
             .iter()
             .filter(|c| {

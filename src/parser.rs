@@ -2,6 +2,7 @@ lalrpop_mod!(pub grammar);
 
 use crate::terms::{Goals, Term};
 
+#[allow(dead_code)]
 pub fn parse_expr(str: &str) -> Result<Term, ()> {
     let parser = grammar::ExprParser::new();
     parser.parse(&str).map_err(|_| ())
