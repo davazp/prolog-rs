@@ -13,7 +13,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let db = Session::create(&args.file).expect("could not start session");
+    let session = Session::create(&args.file).expect("could not start session");
 
     loop {
         let mut line = String::new();
@@ -30,6 +30,6 @@ fn main() {
             }
         };
 
-        db.query(query);
+        session.query(query);
     }
 }

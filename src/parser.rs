@@ -15,6 +15,14 @@ pub fn parse_query(str: &str) -> Result<Goals, ()> {
         .and_then(|t| t.as_goals().ok_or(()))
 }
 
+pub fn parse_queries(str: &str) -> Result<Vec<Goals>, ()> {
+    let parser = grammar::QueriesParser::new();
+    parser
+        .parse(&str)
+        .map_err(|_| ())
+        .and_then(|t| t.into_iter().map(|t| t.as_goals().ok_or(())).collect())
+}
+
 #[cfg(test)]
 mod tests {
     use super::parse_expr;

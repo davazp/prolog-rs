@@ -7,12 +7,16 @@ use std::io;
 
 pub struct Session {
     db: Database,
+    pub interactive: bool,
 }
 
 impl Session {
     pub fn create(file: &str) -> Result<Session, ()> {
         let db = Database::from_file(file).map_err(|_| ())?;
-        Ok(Session { db })
+        Ok(Session {
+            db,
+            interactive: true,
+        })
     }
 
     fn solve(&self, resolvent: &mut Goals, env: &mut Env, chr: u32) -> bool {
@@ -22,11 +26,15 @@ impl Session {
                 env.print();
                 println!("-------------------------");
 
-                let mut line = String::new();
-                io::stdin().read_line(&mut line).expect("read line");
-                match line.trim() {
-                    ";" => false,
-                    _ => true,
+                if self.interactive {
+                    let mut line = String::new();
+                    io::stdin().read_line(&mut line).expect("read line");
+                    match line.trim() {
+                        ";" => false,
+                        _ => true,
+                    }
+                } else {
+                    true
                 }
             }
             Some(selection) => {
@@ -81,10 +89,12 @@ impl Session {
         }
     }
 
-    pub fn query(&self, mut query: Goals) {
+    pub fn query(&self, mut query: Goals) -> bool {
         let mut env = Env::new();
-        if !self.solve(&mut query, &mut env, 1) {
-            println!("false")
+        let result = self.solve(&mut query, &mut env, 1);
+        if !result {
+            println!("false");
         }
+        result
     }
 }

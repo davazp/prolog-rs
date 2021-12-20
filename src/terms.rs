@@ -42,6 +42,14 @@ impl Goals {
             functor.rename(chr)
         }
     }
+
+    pub fn as_term(&self) -> Term {
+        self.0
+            .iter()
+            .map(|f| f.as_term())
+            .reduce(|acc, next| Term::functor2(",", acc, next))
+            .unwrap()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -55,6 +63,10 @@ impl Functor {
         for arg in self.args.iter_mut() {
             arg.rename(chr);
         }
+    }
+
+    pub fn as_term(&self) -> Term {
+        Term::Fun(self.clone())
     }
 }
 
