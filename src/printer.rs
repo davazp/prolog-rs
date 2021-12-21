@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-use crate::terms::{Functor, Name, Term, Variable};
+use crate::terms::{Atom, Functor, Term, Variable};
 
 pub fn print(term: &Term) -> String {
     match term {
@@ -25,8 +25,8 @@ pub fn print(term: &Term) -> String {
     }
 }
 
-fn name_as_string(name: &Name) -> &str {
-    let Name(str) = name;
+fn name_as_string(name: &Atom) -> &str {
+    let Atom(str) = name;
     str
 }
 

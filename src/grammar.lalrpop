@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::terms::{Functor, Name, Term, Variable} ;
+use crate::terms::{Functor, Atom, Term, Variable} ;
 
 grammar;
 
@@ -34,7 +34,7 @@ Rule400 = XFY<Op400, ExprTerm>;
 Op400 = { "*", "/" }
 
 ExprTerm = {
-    Name,
+    Number,
     Variable,
     AtomicFunctor,
     Functor,
@@ -42,17 +42,17 @@ ExprTerm = {
 }
 
 AtomicFunctor: Term =
-    Identifier => Term::Fun( Functor{ name: <>, args: vec![]} );
+    Atom => Term::Fun( Functor{ name: <>, args: vec![]} );
 
 Functor: Term =
     <i:FunctorName> <args:(<FunctorArg> ","?)+> ")" => Term::Fun(Functor { name: i, args: args });
 
 FunctorArg: Term = Rule700;
 
-Name: Term = Num => Term::Integer(<>);
+Number: Term = Num => Term::Integer(<>);
 
-FunctorName: Name = r"[a-z][_A-Za-z0-9]*\(" => Name(<>.to_string());
-Identifier: Name = r"[a-z][_A-Za-z0-9]*" => Name(<>.to_string());
+FunctorName: Atom = r"[a-z][_A-Za-z0-9]*\(" => Atom(<>.to_string());
+Atom: Atom = r"[a-z][_A-Za-z0-9]*" => Atom(<>.to_string());
 Variable: Term = r"[_A-Z][_A-Za-z0-9]*" => Term::Var(Variable(<>.to_string(), 0));
 
 Num: i32 = r"[0-9]+" => i32::from_str(<>).unwrap();

@@ -1,5 +1,5 @@
 use crate::parser;
-use crate::terms::{Clause, Functor, Name};
+use crate::terms::{Atom, Clause, Functor};
 use std::fs;
 
 pub struct Database {
@@ -26,7 +26,7 @@ impl Database {
         Ok(Database { clauses })
     }
 
-    pub fn matching_clauses(&self, fname: &Name, farity: usize) -> Vec<Clause> {
+    pub fn matching_clauses(&self, fname: &Atom, farity: usize) -> Vec<Clause> {
         let result: Vec<Clause> = self
             .clauses
             .iter()

@@ -1,12 +1,12 @@
 use std::collections::{HashSet, VecDeque};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Name(pub String);
+pub struct Atom(pub String);
 
-impl Name {
+impl Atom {
     #[allow(dead_code)]
     pub fn from(name: &str) -> Self {
-        Name(name.to_string())
+        Atom(name.to_string())
     }
 }
 
@@ -54,7 +54,7 @@ impl Goals {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Functor {
-    pub name: Name,
+    pub name: Atom,
     pub args: Vec<Term>,
 }
 
@@ -81,7 +81,7 @@ impl Term {
     #[allow(dead_code)]
     pub fn name(name: &str) -> Term {
         Term::Fun(Functor {
-            name: Name(name.to_string()),
+            name: Atom(name.to_string()),
             args: vec![],
         })
     }
@@ -93,7 +93,7 @@ impl Term {
 
     pub fn functor2(name: &str, arg1: Term, arg2: Term) -> Term {
         Term::Fun(Functor {
-            name: Name(name.to_string()),
+            name: Atom(name.to_string()),
             args: vec![arg1, arg2],
         })
     }
@@ -120,7 +120,7 @@ impl Term {
 
     pub fn as_goals(self) -> Option<Goals> {
         match self.as_functor()? {
-            Functor { name, mut args } if name == Name(",".to_string()) && args.len() == 2 => {
+            Functor { name, mut args } if name == Atom(",".to_string()) && args.len() == 2 => {
                 let mut other = args.pop()?.as_goals()?;
                 let mut query = args.pop()?.as_goals()?;
                 query.append(&mut other);
@@ -169,7 +169,7 @@ impl Clause {
     pub fn from(term: Term) -> Result<Clause, ()> {
         match term.as_functor() {
             Some(Functor {
-                name: Name(name),
+                name: Atom(name),
                 mut args,
             }) if name == ":-" => match args.len() {
                 0 => Err(()),
