@@ -2,7 +2,6 @@ use crate::database::Database;
 use crate::env::Env;
 use crate::terms::{Clause, Functor, Goals};
 use crate::unify::unify_functors_in_env;
-use std::collections::VecDeque;
 use std::io;
 use std::rc::Rc;
 
@@ -30,12 +29,8 @@ impl Resolvent {
         Resolvent(Rc::new(ResolventNode::Empty))
     }
 
-    fn from_goal(g: Functor) -> Resolvent {
-        let node = ResolventNode::Item {
-            head: g,
-            rest: Resolvent::empty(),
-        };
-        Resolvent(Rc::new(node))
+    fn from_slice(v: &[Functor]) -> Resolvent {
+        Resolvent::empty().append(Vec::from(v))
     }
 }
 
@@ -76,11 +71,11 @@ impl Session {
                 rest: remaining,
             } => {
                 let mut clauses =
-                    VecDeque::from(self.db.matching_clauses(&first.name, first.args.len()));
+                    Vec::from(self.db.matching_clauses(&first.name, first.args.len()));
                 for c in clauses.iter_mut() {
                     c.rename(chr)
                 }
-                self.prove(&first, clauses, &remaining, env, chr)
+                self.prove(&first, &clauses, &remaining, env, chr)
             }
         }
     }
@@ -88,7 +83,7 @@ impl Session {
     fn prove(
         &self,
         goal: &Functor,
-        mut clauses: VecDeque<Clause>,
+        clauses: &[Clause],
         resolvent: &Resolvent,
         env: &mut Env,
         chr: u32,
@@ -98,26 +93,27 @@ impl Session {
         } else {
             env.push_frame();
 
-            let clause = clauses.pop_front().unwrap();
+            let first_clause = &clauses[0];
+            let rest_clauses = &clauses[1..];
 
-            if unify_functors_in_env(env, &goal, &clause.head) {
-                let newresolvent = resolvent.append(Vec::from(clause.body.0));
+            if unify_functors_in_env(env, &goal, &first_clause.head) {
+                let newresolvent = resolvent.append(first_clause.body.0.clone());
                 if self.solve(&newresolvent, env, chr + 1) {
                     true
                 } else {
                     env.pop_frame();
-                    self.prove(goal, clauses, resolvent, env, chr)
+                    self.prove(goal, rest_clauses, resolvent, env, chr)
                 }
             } else {
                 env.pop_frame();
-                self.prove(goal, clauses, resolvent, env, chr)
+                self.prove(goal, rest_clauses, resolvent, env, chr)
             }
         }
     }
 
     pub fn query(&self, query: Goals) -> bool {
         let mut env = Env::new();
-        let resolvent = Resolvent::append(&Resolvent::empty(), Vec::from(query.0));
+        let resolvent = Resolvent::from_slice(&query.0);
         let result = self.solve(&resolvent, &mut env, 1);
         if !result {
             println!("false");

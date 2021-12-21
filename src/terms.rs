@@ -1,4 +1,4 @@
-use std::collections::{HashSet, VecDeque};
+use std::collections::HashSet;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Atom(pub String);
@@ -21,20 +21,14 @@ impl Variable {
 }
 
 #[derive(Clone)]
-pub struct Goals(pub VecDeque<Functor>);
+pub struct Goals(pub Vec<Functor>);
 
 impl Goals {
     pub fn empty() -> Goals {
-        Goals(VecDeque::new())
+        Goals(Vec::new())
     }
     pub fn append(&mut self, other: &mut Goals) {
         self.0.append(&mut other.0);
-    }
-    pub fn select(&mut self) -> Option<Functor> {
-        self.0.pop_front()
-    }
-    pub fn select_as_ref(&self) -> Option<&Functor> {
-        self.0.get(0)
     }
 
     pub fn rename(&mut self, chr: u32) {
@@ -42,7 +36,6 @@ impl Goals {
             functor.rename(chr)
         }
     }
-
     pub fn as_term(&self) -> Term {
         self.0
             .iter()
@@ -126,7 +119,7 @@ impl Term {
                 query.append(&mut other);
                 Some(query)
             }
-            fun => Some(Goals(VecDeque::from([fun]))),
+            fun => Some(Goals(Vec::from([fun]))),
         }
     }
 
