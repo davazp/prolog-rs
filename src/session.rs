@@ -83,27 +83,18 @@ impl Session {
         env: &mut Env,
         chr: u32,
     ) -> bool {
-        if clauses.is_empty() {
-            false
-        } else {
+        for clause in clauses {
             env.push_frame();
-
-            let first_clause = &clauses[0];
-            let rest_clauses = &clauses[1..];
-
-            if unify_functors_in_env(env, &goal, &first_clause.head) {
-                let newresolvent = resolvent.append(first_clause.body.0.clone());
+            if unify_functors_in_env(env, &goal, &clause.head) {
+                let newresolvent = resolvent.append(clause.body.0.clone());
                 if self.solve(&newresolvent, env, chr + 1) {
-                    true
-                } else {
                     env.pop_frame();
-                    self.prove(goal, rest_clauses, resolvent, env, chr)
+                    return true;
                 }
-            } else {
-                env.pop_frame();
-                self.prove(goal, rest_clauses, resolvent, env, chr)
             }
+            env.pop_frame();
         }
+        false
     }
 
     pub fn query(&self, query: Goals) -> bool {
