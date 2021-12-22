@@ -67,7 +67,17 @@ List: Term = {
 
 Number: Term = Num => Term::Integer(<>);
 
-FunctorName: Atom = r"[a-z][_A-Za-z0-9]*\(" => Atom(<>.to_string());
+FunctorName: Atom = r"[a-z][_A-Za-z0-9]*\(" => {
+    // Note that we include the open parenthesis in FunctorName regex,
+    // to not allow a whitespace between the name and the parenthesis.
+    //
+    // However, we don't want to include it in the returned value, so
+    // we remove it.
+    let m = <>;
+    let name = &m[..m.len()];
+    Atom(name.to_string())
+};
+
 Atom: Atom = r"[a-z][_A-Za-z0-9]*" => Atom(<>.to_string());
 Variable: Term = r"[_A-Z][_A-Za-z0-9]*" => Term::Var(Variable(<>.to_string(), 0));
 
