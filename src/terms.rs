@@ -136,6 +136,28 @@ impl Term {
             _ => {}
         }
     }
+
+    pub fn is_functor0(&self, fname: &str) -> bool {
+        match self {
+            Term::Fun(Functor { name, args }) => &name.0 == fname && args.is_empty(),
+            _ => false,
+        }
+    }
+
+    pub fn is_functor2(&self, fname: &str) -> Option<(&Term, &Term)> {
+        match self {
+            Term::Fun(Functor { name, args }) => {
+                if &name.0 == fname && args.len() == 2 {
+                    let arg1 = args.get(0).unwrap();
+                    let arg2 = args.get(1).unwrap();
+                    Some((arg1, arg2))
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
 }
 
 fn term_variables_in_set<'a>(term: &'a Term, set: &mut HashSet<&'a Variable>) {
