@@ -59,5 +59,7 @@ mod tests {
         assert!(parse_expr("[1+X,2,3]").is_ok());
         assert!(parse_expr("[1+X,2,]").is_err());
         assert!(parse_expr("[[1],[2],[3]]").is_ok());
+        assert!(parse_expr("[X|Y]").is_ok());
+        assert!(parse_expr("[1|[]]").is_ok());
     }
 }

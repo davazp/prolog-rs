@@ -17,3 +17,7 @@ always(X) :- lunch(X), dinner(X).
 
 nat(0).
 nat(s(X)) :- nat(X).
+
+append([], L, L).
+append([H|T], L, [H|R]) :-
+    append(T, L, R).
