@@ -10,6 +10,7 @@ pub Query = <Expr> ".";
 pub Queries = Query*;
 
 pub Expr = Rule1200;
+Expr_arg = Rule1200_arg;
 
 XFY<Op,NextTier>: Term = {
     <l:XFY<Op,NextTier>> <op:Op> <r:NextTier> => Term::functor2(op, l, r),
@@ -45,12 +46,10 @@ AtomicFunctor: Term =
     Atom => Term::Fun( Functor{ name: <>, args: vec![]} );
 
 Functor: Term =
-    <i:FunctorName> <arg1:FunctorArg> <mut args:("," <FunctorArg>)*> ")" => {
+    <i:FunctorName> <arg1:Expr_arg> <mut args:("," <Expr_arg>)*> ")" => {
         args.insert(0, arg1);
         Term::Fun(Functor { name: i, args })
     };
-
-FunctorArg: Term = Rule700;
 
 Number: Term = Num => Term::Integer(<>);
 
