@@ -14,15 +14,10 @@ enum ResolventNode {
 
 impl Resolvent {
     fn append(&self, goals: Vec<Functor>) -> Resolvent {
-        let mut resolvent = self.clone();
-        for g in goals.into_iter().rev() {
-            let node = ResolventNode::Item {
-                head: g,
-                rest: resolvent,
-            };
-            resolvent = Resolvent(Rc::new(node))
-        }
-        resolvent
+        goals.into_iter().rfold(self.clone(), |acc, g| {
+            let node = ResolventNode::Item { head: g, rest: acc };
+            Resolvent(Rc::new(node))
+        })
     }
 
     fn empty() -> Resolvent {
