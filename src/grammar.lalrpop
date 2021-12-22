@@ -45,7 +45,10 @@ AtomicFunctor: Term =
     Atom => Term::Fun( Functor{ name: <>, args: vec![]} );
 
 Functor: Term =
-    <i:FunctorName> <args:(<FunctorArg> ","?)+> ")" => Term::Fun(Functor { name: i, args: args });
+    <i:FunctorName> <arg1:FunctorArg> <mut args:("," <FunctorArg>)*> ")" => {
+        args.insert(0, arg1);
+        Term::Fun(Functor { name: i, args })
+    };
 
 FunctorArg: Term = Rule700;
 

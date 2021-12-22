@@ -34,8 +34,9 @@ mod tests {
         assert!(parse_expr("false").is_ok());
 
         assert!(parse_expr("plus(1,2,3)").is_ok());
-        assert!(parse_expr("plus(1,2,3,)").is_ok());
         assert!(parse_expr("plus(1,2").is_err());
+
+        assert!(parse_expr("plus(1 2 3)").is_err());
 
         assert!(parse_expr("X(1,2)").is_err());
 
