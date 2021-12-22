@@ -19,9 +19,13 @@ XFY<Op,NextTier>: Term = {
     NextTier
 };
 
-Rule1200 = XFY<Op1200, Rule1000>;
-Rule1200_arg = XFY<Op1200, Rule1000_arg>;
+Rule1200 = XFY<Op1200, Rule1100>;
+Rule1200_arg = XFY<Op1200, Rule1100_arg>;
 Op1200 = { ":-" };
+
+Rule1100 = XFY<Op1100, Rule1000>;
+Rule1100_arg = XFY<Op1100, Rule1000_arg>;
+Op1100 = { ";" }
 
 Rule1000 = XFY<Op1000, Rule700>;
 Rule1000_arg = Rule700;
