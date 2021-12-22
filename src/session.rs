@@ -20,6 +20,14 @@ impl Resolvent {
         })
     }
 
+    fn add(&self, goal: Functor) -> Resolvent {
+        let node = ResolventNode::Item {
+            head: goal,
+            rest: self.clone(),
+        };
+        Resolvent(Rc::new(node))
+    }
+
     fn empty() -> Resolvent {
         Resolvent(Rc::new(ResolventNode::Empty))
     }
@@ -66,11 +74,38 @@ impl Session {
                 head: first,
                 rest: remaining,
             } => {
-                let mut clauses = self.db.matching_clauses(&first.name, first.args.len());
-                for c in clauses.iter_mut() {
-                    c.rename(chr)
+                let name = &first.name;
+                let arity = first.args.len();
+
+                match (name.0.as_str(), arity) {
+                    (";", 2) => {
+                        let left = first
+                            .args
+                            .get(0)
+                            .and_then(|t| t.clone().as_functor())
+                            .unwrap();
+                        let right = first
+                            .args
+                            .get(1)
+                            .and_then(|t| t.clone().as_functor())
+                            .unwrap();
+
+                        if self.solve(&remaining.add(left), env, chr) {
+                            return true;
+                        }
+                        if self.solve(&remaining.add(right), env, chr) {
+                            return true;
+                        }
+                        false
+                    }
+                    (_, _) => {
+                        let mut clauses = self.db.matching_clauses(name, arity);
+                        for c in clauses.iter_mut() {
+                            c.rename(chr)
+                        }
+                        self.prove(&first, &clauses, &remaining, env, chr)
+                    }
                 }
-                self.prove(&first, &clauses, &remaining, env, chr)
             }
         }
     }
