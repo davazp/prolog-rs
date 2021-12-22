@@ -59,7 +59,7 @@ List: Term = {
     "[" <x:Expr_arg> <mut xs:("," <Expr_arg>)*> <tail:("|" <Expr_arg>)?> "]" => {
         let rest = tail.unwrap_or(Term::name("[]"));
         xs.insert(0, x);
-        xs.into_iter().fold(rest, |lst, x| {
+        xs.into_iter().rfold(rest, |lst, x| {
             Term::functor2("[|]", x, lst)
         })
     }

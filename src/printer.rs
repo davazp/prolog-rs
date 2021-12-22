@@ -11,12 +11,23 @@ pub fn print(term: &Term) -> String {
             if args.is_empty() {
                 format!("{}", name_as_string(name))
             } else {
-                format!(
-                    "{}({})",
-                    name_as_string(name),
-                    Itertools::intersperse(args.iter().map(|a| print(a)), ",".to_string())
-                        .collect::<String>()
-                )
+                let name = name_as_string(name);
+                match name {
+                    "[]" => "[]".to_string(),
+                    "[|]" => {
+                        let left = args.get(0).unwrap();
+                        let right = args.get(1).unwrap();
+                        format!("{} | {}", print(left), print(right))
+                    }
+                    _ => {
+                        format!(
+                            "{}({})",
+                            name,
+                            Itertools::intersperse(args.iter().map(|a| print(a)), ",".to_string())
+                                .collect::<String>()
+                        )
+                    }
+                }
             }
         }
         Term::Var(v) => {
