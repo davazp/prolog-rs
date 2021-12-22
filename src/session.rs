@@ -48,24 +48,25 @@ impl Session {
         })
     }
 
+    fn answer(&self, env: &Env) -> bool {
+        println!("solution:");
+        env.print();
+        println!("-------------------------");
+        if self.interactive {
+            let mut line = String::new();
+            io::stdin().read_line(&mut line).expect("read line");
+            match line.trim() {
+                ";" => false,
+                _ => true,
+            }
+        } else {
+            true
+        }
+    }
+
     fn solve(&self, resolvent: &Resolvent, env: &mut Env, chr: u32) -> bool {
         match &*resolvent.0 {
-            ResolventNode::Empty => {
-                println!("solution:");
-                env.print();
-                println!("-------------------------");
-
-                if self.interactive {
-                    let mut line = String::new();
-                    io::stdin().read_line(&mut line).expect("read line");
-                    match line.trim() {
-                        ";" => false,
-                        _ => true,
-                    }
-                } else {
-                    true
-                }
-            }
+            ResolventNode::Empty => self.answer(env),
             ResolventNode::Item {
                 head: first,
                 rest: remaining,
