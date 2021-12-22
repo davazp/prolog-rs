@@ -1,3 +1,5 @@
+// -*- rust -*-
+
 use std::str::FromStr;
 
 use crate::terms::{Functor, Atom, Term, Variable} ;
@@ -39,6 +41,7 @@ ExprTerm = {
     Variable,
     AtomicFunctor,
     Functor,
+    List,
     "(" <Expr> ")"
 }
 
@@ -50,6 +53,16 @@ Functor: Term =
         args.insert(0, arg1);
         Term::Fun(Functor { name: i, args })
     };
+
+List: Term = {
+    "[" "]" => Term::name("[]"),
+    "[" <x:Expr_arg> <mut xs:("," <Expr_arg>)*> "]" => {
+        xs.insert(0, x);
+        xs.into_iter().fold(Term::name("[]"), |lst, x| {
+            Term::functor2("[|]", x, lst)
+        })
+    }
+}
 
 Number: Term = Num => Term::Integer(<>);
 

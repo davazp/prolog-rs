@@ -53,5 +53,11 @@ mod tests {
         assert!(parse_expr("test :- a").is_ok());
 
         assert!(parse_expr("f((a,b))").is_ok());
+
+        assert!(parse_expr("[]").is_ok());
+        assert!(parse_expr("[1,2,3]").is_ok());
+        assert!(parse_expr("[1+X,2,3]").is_ok());
+        assert!(parse_expr("[1+X,2,]").is_err());
+        assert!(parse_expr("[[1],[2],[3]]").is_ok());
     }
 }
