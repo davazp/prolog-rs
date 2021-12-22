@@ -1,5 +1,6 @@
 use clap::Parser;
-use std::io::{self, Write};
+use rustyline::error::ReadlineError;
+use rustyline::Editor;
 
 use prolog_rs::*;
 
@@ -10,26 +11,46 @@ struct Args {
     file: String,
 }
 
-fn main() {
-    let args = Args::parse();
+fn repl(file: &str) {
+    let session = Session::create(file).expect("could not start session");
 
-    let session = Session::create(&args.file).expect("could not start session");
+    let mut rl = Editor::<()>::new();
+    let history_file = "prolog_rs_history";
+
+    let _ = rl.load_history(history_file);
 
     loop {
-        let mut line = String::new();
-        print!("?- ");
-        io::stdout().flush().unwrap();
-
-        std::io::stdin().read_line(&mut line).unwrap();
-
-        let query = match parse_query(line.trim_end()) {
-            Ok(query) => query,
-            Err(_) => {
-                println!("invalid query");
-                continue;
+        let readline = rl.readline("?- ");
+        match readline {
+            Ok(line) => {
+                rl.add_history_entry(&line);
+                let query = match parse_query(line.trim_end()) {
+                    Ok(query) => query,
+                    Err(_) => {
+                        println!("invalid query");
+                        continue;
+                    }
+                };
+                session.query(query);
             }
-        };
-
-        session.query(query);
+            Err(ReadlineError::Interrupted) => {
+                println!("CTRL-C");
+                break;
+            }
+            Err(ReadlineError::Eof) => {
+                println!("CTRL-D");
+                break;
+            }
+            Err(err) => {
+                println!("Error: {:?}", err);
+                break;
+            }
+        }
     }
+    rl.save_history(history_file).unwrap();
+}
+
+fn main() {
+    let args = Args::parse();
+    repl(&args.file);
 }
