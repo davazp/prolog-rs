@@ -70,8 +70,7 @@ impl Session {
                 head: first,
                 rest: remaining,
             } => {
-                let mut clauses =
-                    Vec::from(self.db.matching_clauses(&first.name, first.args.len()));
+                let mut clauses = self.db.matching_clauses(&first.name, first.args.len());
                 for c in clauses.iter_mut() {
                     c.rename(chr)
                 }
