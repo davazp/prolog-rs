@@ -1,3 +1,1 @@
-# A simple prolog interpreter writtein in Rust
-
-A learning exercise.
+# A toy prolog interpreter written in in Rust
