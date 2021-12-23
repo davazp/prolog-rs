@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Atom(pub String);
@@ -158,6 +158,30 @@ impl Term {
             _ => None,
         }
     }
+
+    /// Rename variables according to their position to make possible
+    /// compare two terms up to variable renaming.
+    pub fn normalize(&mut self) {
+        let mut map: HashMap<Variable, String> = HashMap::new();
+        self.normalize_in_env(&mut map);
+        println!("{:?}", map);
+    }
+
+    fn normalize_in_env(&mut self, map: &mut HashMap<Variable, String>) {
+        match self {
+            Term::Var(v) => {
+                let next = map.len() + 1;
+                let replacement = map.entry(v.clone()).or_insert_with(|| format!("V{}", next));
+                v.0 = replacement.clone();
+            }
+            Term::Fun(Functor { args, .. }) => {
+                for a in args {
+                    a.normalize_in_env(map);
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 fn term_variables_in_set<'a>(term: &'a Term, set: &mut HashSet<&'a Variable>) {
@@ -214,6 +238,7 @@ impl Clause {
 mod tests {
     use super::*;
     use crate::parser;
+    use crate::printer::print;
 
     #[test]
     fn term_variables() {
@@ -221,5 +246,12 @@ mod tests {
         let vars = term.variables();
         assert_eq!(vars.len(), 1);
         assert!(vars.get(&Variable::from("Y")).is_some());
+    }
+
+    #[test]
+    fn term_normalization() {
+        let mut term = parser::parse_expr("f(X, Y, Y, Z)").unwrap();
+        term.normalize();
+        assert_eq!(print(&term), "f(V1, V2, V2, V3)");
     }
 }

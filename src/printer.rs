@@ -52,7 +52,7 @@ pub fn print(term: &Term) -> String {
                         format!(
                             "{}({})",
                             name,
-                            Itertools::intersperse(args.iter().map(|a| print(a)), ",".to_string())
+                            Itertools::intersperse(args.iter().map(|a| print(a)), ", ".to_string())
                                 .collect::<String>()
                         )
                     }

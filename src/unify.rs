@@ -1,5 +1,8 @@
 use crate::env::Env;
+use crate::printer::print;
 use crate::terms::{Functor, Term, Variable};
+
+const TRACE: bool = false;
 
 pub fn unify_functors_in_env(env: &mut Env, f1: &Functor, f2: &Functor) -> bool {
     match (f1, f2) {
@@ -26,9 +29,14 @@ pub fn unify_functors_in_env(env: &mut Env, f1: &Functor, f2: &Functor) -> bool 
 }
 
 fn unify_in_env(env: &mut Env, t1: &Term, t2: &Term) -> bool {
+    if TRACE {
+        println!("----------------------------------");
+        println!("{} = {}", print(t1), print(t2));
+        println!("Env:");
+        env.print();
+    }
     match (t1, t2) {
         (Term::Integer(x), Term::Integer(y)) => x == y,
-        (Term::Var(x), Term::Var(y)) if x == y => true,
         (Term::Var(x), value) => bind_var(env, x, value.clone()),
         (value, Term::Var(x)) => bind_var(env, x, value.clone()),
         (Term::Fun(f1), Term::Fun(f2)) => unify_functors_in_env(env, f1, f2),
@@ -37,16 +45,28 @@ fn unify_in_env(env: &mut Env, t1: &Term, t2: &Term) -> bool {
 }
 
 fn bind_var(env: &mut Env, var: &Variable, value: Term) -> bool {
+    if TRACE {
+        println!("bind {} to {}", var.0, print(&value));
+    }
+    if let Term::Var(right_var) = &value {
+        if var == right_var {
+            return true;
+        }
+        if let Some(bound_value) = env.lookup(right_var).map(|x| x.clone()) {
+            return bind_var(env, var, bound_value);
+        }
+    }
+
     if occur_check(var, &value) {
         return false;
     }
-    let binding = env.lookup(var).map(|x| x.clone());
-    if let Some(bound_value) = binding {
-        unify_in_env(env, &value, &bound_value)
-    } else {
-        env.bind(var.clone(), value);
-        true
+
+    if let Some(bound_value) = env.lookup(var).map(|x| x.clone()) {
+        return unify_in_env(env, &value, &bound_value);
     }
+
+    env.bind(var.clone(), value);
+    true
 }
 
 fn occur_check(var: &Variable, term: &Term) -> bool {
@@ -104,7 +124,9 @@ mod tests {
         let t1 = parse_expr(e1);
         let t2 = parse_expr(e2);
         let env = unify(&t1, &t2).expect("expressions do not unify");
-        substitute(&env, &t1)
+        let mut result = substitute(&env, &t1);
+        result.normalize();
+        result
     }
 
     #[test]
@@ -150,5 +172,10 @@ mod tests {
     #[test]
     fn test_transitive_unification() {
         assert_eq!(unifier("f(X,Y)", "f(Y,1)"), parse_expr("f(1,1)"));
+    }
+
+    #[test]
+    fn test_transitive_unification_2() {
+        assert_eq!(unifier("f(X,Y,Z)", "f(Y,Z,X)"), parse_expr("f(V1,V1,V1)"));
     }
 }

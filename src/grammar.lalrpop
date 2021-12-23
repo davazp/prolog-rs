@@ -78,7 +78,7 @@ FunctorName: Atom = r"[a-z][_A-Za-z0-9]*\(" => {
     // However, we don't want to include it in the returned value, so
     // we remove it.
     let m = <>;
-    let name = &m[..m.len()];
+    let name = &m[..m.len()-1];
     Atom(name.to_string())
 };
 
